@@ -10,8 +10,12 @@ class myCustomEmail {
 	var $bcc;
 	var $subget;
 	var $headers;
+	var $charset = 'charset=UTF-8';
 	
 	var $mensaje;
+	
+	var $success;
+	var $error;
 	
 	public function getInputs($names = '') {
 	
@@ -53,11 +57,11 @@ class myCustomEmail {
 		
 		$this->replayTo = $replayTo;
 	
-		return $this->replayTo;
+		return $this->replayTo = $_POST[$this->replayTo];
 		
 	}
 	
-	public function cc($cc = false) {
+	public function cc($cc = '') {
 		
 		$this->cc = $cc;
 		
@@ -65,12 +69,12 @@ class myCustomEmail {
 		
 	}
 	
-	public function bcc($bcc = false) {
+	public function bcc($bcc = '') {
 		
 		$this->bcc = $bcc;
 		
 		return $this->bcc;
-		
+
 	}
 	
 	public function subget($subget) {
@@ -81,26 +85,28 @@ class myCustomEmail {
 		
 	}
 	
-	private function head() {
+	private function head($charset) {
+	
+		$this->charset = $charset;
 		
 		//para el envío en formato HTML
 		$this->headers = "MIME-Version: 1.0\r\n";
-		$this->headers .= "Content-type: text/html; charset=iso-8859-1\r\n";
+		$this->headers .= "Content-type: text/html; $this->charset\r\n";
 		
 		//dirección del remitente
-		$this->headers .= "From: $this->from($this->from); \r\n";
+		$this->headers .= "From: $this->from($this->from) \r\n";
 		
 		//dirección de respuesta, si queremos que sea distinta que la del remitente
-		$this->headers .= "Reply-To: $this->replayTo($this->replayTo); \r\n";
+		$this->headers .= "Reply-To: $this->replayTo($this->replayTo) \r\n";
 			
 		//ruta del mensaje desde origen a destino
-		$this->headers .= "Return-path: holahola@desarrolloweb.com\r\n";
+		$this->headers .= "Return-path: \r\n";
 		
 		//direcciones que recibián copia
-		$this->headers .= "Cc: $this->cc($this->cc); \r\n";
+		$this->headers .= "Cc: $this->cc($this->cc) \r\n";
 		
 		//direcciones que recibirán copia oculta
-		$this->headers .= "Bcc: $this->bcc($this->bcc); \r\n"; 
+		$this->headers .= "Bcc: $this->bcc($this->bcc) \r\n"; 
 		
 		return $this->headers;	
 	
@@ -112,7 +118,7 @@ class myCustomEmail {
 		$mensaje = '
 		<html>
 		<head>
-		  <title>Recordatorio de cumpleaños para Agosto</title>
+		  <title>Nuevo mensaje enviado</title>
 		</head>
 		<body>';
 		
@@ -126,24 +132,33 @@ class myCustomEmail {
 		
 	}
 	
-	public function composeEmail() {
+	public function composeEmail($success = '', $error = '') {
 		
 		// Varios destinatarios
 		$recipientEmail  = $this->to($this->to);
+		
+		// Mensajes
+		
+		$this->success = $success;
+		$this->error = $error;
+		
+		$msgState;
 		
 		// subject
 		$subget = $this->subget($this->subget);
 		
 		// Mail it
-		if( mail($recipientEmail, $subget, $this->bodyMsg(), $this->head() ) ) {
+		if( mail($recipientEmail, $subget, $this->bodyMsg(), $this->head($this->charset) ) ) {
 			
-			echo 'Mensaje enviado con éxito.';
+			$msgState .= $this->success;
 			
 		} else {
 			
-			echo 'Ha ocurrido un error al enviar el mensaje.';
+			$msgState .= $this->error;
 			
 		}
+		
+		echo $msgState;
 		
 	}
 	
